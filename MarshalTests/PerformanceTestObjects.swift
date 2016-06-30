@@ -32,13 +32,13 @@ struct Recording : Unmarshaling {
     let recordId:String
     let recGroup:RecGroup
     
-    init(object json:MarshaledObject) throws {
-        //startTs = try? json.valueForKey("StartTs")
-        //endTs = try? json.valueForKey("EndTs")
-        startTsStr = try json.valueForKey("StartTs")
-        recordId = try json.valueForKey("RecordId")
-        status = (try? json.valueForKey("Status")) ?? .Unknown
-        recGroup = (try? json.valueForKey("RecGroup")) ?? .Unknown
+    init(object json:Marshaled) throws {
+        //startTs = try? json.value(key: "StartTs")
+        //endTs = try? json.value(key: "EndTs")
+        startTsStr = try json.value(key: "StartTs")
+        recordId = try json.value(key: "RecordId")
+        status = (try? json.value(key: "Status")) ?? .Unknown
+        recGroup = (try? json.value(key: "RecGroup")) ?? .Unknown
     }
 }
 
@@ -54,34 +54,34 @@ struct Program : Unmarshaling {
     let season:Int?
     let episode:Int?
     
-    init(object json: MarshaledObject) throws {
+    init(object json: Marshaled) throws {
         try self.init(jsonObj:json)
     }
     
-    init(jsonObj:MarshaledObject, channelId:String? = nil) throws {
+    init(jsonObj:Marshaled, channelId:String? = nil) throws {
         let json = jsonObj
-        title = try json.valueForKey("Title")
+        title = try json.value(key: "Title")
         
         if let channelId = channelId {
             self.chanId = channelId
         }
         else {
-            chanId = try json.valueForKey("Channel.ChanId")
+            chanId = try json.value(key: "Channel.ChanId")
         }
-        //startTime = try json.valueForKey("StartTime")
-        //endTime = try json.valueForKey("EndTime")
-        description = try json.valueForKey("Description")
-        subtitle = try json.valueForKey("SubTitle")
-        recording = try json.valueForKey("Recording")
-        season = (try json.valueForKey("Season") as String?).flatMap({Int($0)})
-        episode = (try json.valueForKey("Episode") as String?).flatMap({Int($0)})
+        //startTime = try json.value(key: "StartTime")
+        //endTime = try json.value(key: "EndTime")
+        description = try json.value(key: "Description")
+        subtitle = try json.value(key: "SubTitle")
+        recording = try json.value(key: "Recording")
+        season = (try json.value(key: "Season") as String?).flatMap({Int($0)})
+        episode = (try json.value(key: "Episode") as String?).flatMap({Int($0)})
     }
 }
 
 extension Date : ValueType {
-    public static func value(_ object: Any) throws -> Date {
-        guard let dateString = object as? String else {
-            throw Marshal.Error.typeMismatch(expected: String.self, actual: object.dynamicType)
+    public static func value(any: Any) throws -> Date {
+        guard let dateString = any as? String else {
+            throw Marshal.Error.typeMismatch(expected: String.self, actual: any.dynamicType)
         }
         guard let date = Date.fromISO8601String(dateString) else {
             throw Marshal.Error.typeMismatch(expected: "ISO8601 date string", actual: dateString)

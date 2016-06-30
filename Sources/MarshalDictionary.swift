@@ -21,7 +21,7 @@ public typealias MarshalDictionary = [String: AnyObject]
 
 // MARK: - Dictionary Extensions
 
-extension Dictionary: MarshaledObject {
+extension Dictionary: Marshaled {
     public func optionally(key: KeyType) -> Any? {
         guard let aKey = key as? Key else { return nil }
         
@@ -31,8 +31,8 @@ extension Dictionary: MarshaledObject {
 
 extension NSDictionary: ValueType { }
 
-extension NSDictionary: MarshaledObject {
-    public func anyForKey(_ key: KeyType) throws -> Any {
+extension NSDictionary: Marshaled {
+    public func any(key: KeyType) throws -> Any {
         let value:Any
         if key.dynamicType.keyTypeSeparator == "." {
             // `valueForKeyPath` is more efficient. Use it if possible.
@@ -46,7 +46,7 @@ extension NSDictionary: MarshaledObject {
             var accumulator: Any = self
 
             for component in pathComponents {
-                if let componentData = accumulator as? MarshaledObject, v = componentData.optionally(key: component) {
+                if let componentData = accumulator as? Marshaled, v = componentData.optionally(key: component) {
                     accumulator = v
                     continue
                 }

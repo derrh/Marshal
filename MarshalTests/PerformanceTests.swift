@@ -28,16 +28,16 @@ class PerformanceTests: XCTestCase {
 
     func testTypedDeserialization() {
         self.measure {
-            let json = try! JSONParser.JSONObjectWithData(self.data)
+            let json = try! JSONParser.parseObject(self.data)
             XCTAssert(json.count > 0)
         }
     }
 
     func testPerformance() {
-        let json = try! JSONParser.JSONObjectWithData(data)
+        let json = try! JSONParser.parseObject(data)
 
         self.measure {
-            let programs:[Program] = try! json.valueForKey("ProgramList.Programs")
+            let programs:[Program] = try! json.value(key: "ProgramList.Programs")
             XCTAssert(programs.count > 1000)
         }
     }
