@@ -52,14 +52,14 @@ class MarshalTests: XCTestCase {
             let url:URL = try! self.object.value(key: "url")
             XCTAssertEqual(url.host, "apple.com")
             
-            let expectation = self.expectation(withDescription: "error")
+            let expectation = self.expectation(description: "error")
             do {
                 let _:Int? = try self.object.value(key: "junk")
             }
             catch {
-                let jsonError = error as! Marshal.Error
+                let jsonError = error as! MarshalError
                 expectation.fulfill()
-                guard case Marshal.Error.typeMismatchWithKey = jsonError else {
+                guard case MarshalError.typeMismatchWithKey = jsonError else {
                     XCTFail("shouldn't get here")
                     return
                 }
@@ -68,7 +68,7 @@ class MarshalTests: XCTestCase {
             let urls:[URL] = try! self.object.value(key: "urls")
             XCTAssertEqual(urls.first!.host, "apple.com")
             
-            self.waitForExpectations(withTimeout: 1, handler: nil)
+            self.waitForExpectations(timeout: 1, handler: nil)
         }
     }
     
@@ -91,46 +91,46 @@ class MarshalTests: XCTestCase {
         ora = try! object <| "no key"
         XCTAssertNil(ora)
         
-        let ex = self.expectation(withDescription: "not found")
+        let ex = self.expectation(description: "not found")
         do {
             str = try object <| "not found"
         }
         catch {
-            if case Marshal.Error.keyNotFound = error {
+            if case MarshalError.keyNotFound = error {
                 ex.fulfill()
             }
         }
-        self.waitForExpectations(withTimeout: 1, handler: nil)
+        self.waitForExpectations(timeout: 1, handler: nil)
     }
     
     func testErrors() {
-        var expectation = self.expectation(withDescription: "not found")
+        var expectation = self.expectation(description: "not found")
         let str: String = try! self.object.value(key: "str")
         XCTAssertEqual(str, "Hello, World!")
         do {
             let _:Int = try object.value(key: "no key")
         }
         catch {
-            if case Marshal.Error.keyNotFound = error {
+            if case MarshalError.keyNotFound = error {
                 expectation.fulfill()
             }
         }
         
-        expectation = self.expectation(withDescription: "key mismatch")
+        expectation = self.expectation(description: "key mismatch")
         do {
             let _:Int = try object.value(key: "str")
         }
         catch {
-            if case Marshal.Error.typeMismatchWithKey = error {
+            if case MarshalError.typeMismatchWithKey = error {
                 expectation.fulfill()
             }
         }
         
-        self.waitForExpectations(withTimeout: 1, handler: nil)
+        self.waitForExpectations(timeout: 1, handler: nil)
     }
     
     func testDicionary() {
-        let path = Bundle(for: self.dynamicType).pathForResource("TestDictionary", ofType: "json")!
+        let path = Bundle(for: self.dynamicType).path(forResource: "TestDictionary", ofType: "json")!
         var data = try! Data(contentsOf: URL(fileURLWithPath: path))
         var json:JSONObject = try! JSONParser.parseObject(data)
         let url:URL = try! json.value(key: "meta.next")
@@ -150,7 +150,7 @@ class MarshalTests: XCTestCase {
     }
     
     func testSimpleArray() {
-        let path = Bundle(for: self.dynamicType).pathForResource("TestSimpleArray", ofType: "json")!
+        let path = Bundle(for: self.dynamicType).path(forResource: "TestSimpleArray", ofType: "json")!
         var data = try! Data(contentsOf: URL(fileURLWithPath: path))
         var ra = try! JSONSerialization.jsonObject(with: data, options: []) as! [AnyObject]
         XCTAssertEqual(ra.first as? Int, 1)
@@ -163,7 +163,7 @@ class MarshalTests: XCTestCase {
     }
     
     func testObjectArray() {
-        let path = Bundle(for: self.dynamicType).pathForResource("TestObjectArray", ofType: "json")!
+        let path = Bundle(for: self.dynamicType).path(forResource: "TestObjectArray", ofType: "json")!
         var data = try! Data(contentsOf: URL(fileURLWithPath: path))
         var ra:[JSONObject] = try! JSONParser.parseArray(data)
         
@@ -193,7 +193,7 @@ class MarshalTests: XCTestCase {
     }
     
     func testCustomObjects() {
-        let path = Bundle(for: self.dynamicType).pathForResource("People", ofType: "json")!
+        let path = Bundle(for: self.dynamicType).path(forResource: "People", ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path))
         let obj = try! JSONParser.parseObject(data)
         let people:[Person] = try! obj.value(key: "people")
@@ -227,14 +227,14 @@ class MarshalTests: XCTestCase {
         let nope:MyEnum? = try! json.value(key: "junk")
         XCTAssertEqual(nope, .none)
         
-        let expectation = self.expectation(withDescription: "enum test")
+        let expectation = self.expectation(description: "enum test")
         do {
             let _:MyEnum = try json.value(key: "four")
         }
         catch {
             expectation.fulfill()
         }
-        waitForExpectations(withTimeout: 5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         
         let iOne:MyIntEnum = try! json.value(key: "iOne")
         XCTAssertEqual(iOne, MyIntEnum.one)
@@ -243,7 +243,7 @@ class MarshalTests: XCTestCase {
     
 
     func testSet() {
-        let path = Bundle(for: self.dynamicType).pathForResource("TestSimpleSet", ofType: "json")!
+        let path = Bundle(for: self.dynamicType).path(forResource: "TestSimpleSet", ofType: "json")!
         let data = try! Data(contentsOf: URL(fileURLWithPath: path))
         let json = try! JSONSerialization.jsonObject(with: data, options: []) as! JSONObject
         
@@ -283,6 +283,13 @@ class MarshalTests: XCTestCase {
         
         let char: Character = try! unsigned.value(key: "char")
         XCTAssertEqual(char, "S")
+        
+        let trueAndFalse: JSONObject = ["falsy": NSNumber(value: false), "truthy": NSNumber(value: true)]
+        let truthy: Bool = try! trueAndFalse.value(key: "truthy")
+        XCTAssertTrue(truthy)
+        
+        let falsy: Bool = try! trueAndFalse.value(key: "falsy")
+        XCTAssertFalse(falsy)
     }
 }
 

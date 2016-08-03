@@ -22,7 +22,7 @@ extension Unmarshaling {
     
     public static func value(_ object: Any) throws -> Self {
         guard let marshaledFRD = object as? Marshaled else {
-            throw Error.typeMismatch(expected: Marshaled.self, actual: object.dynamicType)
+            throw MarshalError.typeMismatch(expected: Marshaled.self, actual: object.dynamicType)
         }
         return try self.init(object: marshaledFRD)
     }
